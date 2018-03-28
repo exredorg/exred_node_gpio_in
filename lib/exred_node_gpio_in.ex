@@ -70,9 +70,9 @@ defmodule Exred.Node.GPIOIn do
     # set interrupt monitoring if in 'monitor' mode
     if state.mode.value == "monitor" do
       interrupt = case state.config.monitored_transition.value do
-        [] -> :none,
-        ["rising"] -> :rising,
-        ["falling"] -> :falling,
+        [] -> :none
+        ["rising"]  -> :rising
+        ["falling"] -> :falling
         _ -> :both
       end
       GPIO.set_int(pid, interrupt)
@@ -82,22 +82,27 @@ defmodule Exred.Node.GPIOIn do
   end
 
   @impl true
-  def handle_msg(msg, state) when state.config.mode.value == "read_on_message" do
-    # pin state is 0 or 1
-    pin_state = GPIO.read(state.pid)
-    { %{msg | payload: pin_state}, state}
+  def handle_msg(msg, state) do 
+    case [state.config.mode.value, msg] do 
+
+      ["read_on_message", _] -> 
+        # pin state is 0 or 1
+        pin_state = GPIO.read(state.pid)
+        { %{msg | payload: pin_state}, state}
+        
+      ["monitor", {:gpio_interrupt, _pin, condition}] ->
+        # condition can be :rising or :falling
+        payload = %{pin: state.config.pin_number.value, condition: condition}
+        { %{msg | payload: payload}, state}
+
+      # catch all
+      [mode, _] ->
+        Logger.warn "unhandled message in #{mode} mode"
+        {msg, state}
+
+    end
   end
 
-  def handle_msg({:gpio_interrupt, _pin, condition}, state) when state.config.mode.value == "monitor" do
-    # condition can be :rising or :falling
-    payload = %{pin: state.config.pin_number.value, condition: condition}
-    { %{msg | payload: payload}, state}
-  end
-
-  def handle_msg(msg, state) do
-    Logger.warn "unhandled message in #{state.config.mode.value} mode"
-    {msg, state}
-  end
   
   @impl true
   def fire(state) do
