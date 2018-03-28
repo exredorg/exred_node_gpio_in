@@ -48,14 +48,16 @@ defmodule Exred.Node.GPIOIn do
     pin_number: %{value: 0, type: "number", attrs: %{min: 0}},
     mode: %{
       type: "list-singleselect", 
-      value: ["read_on_message", "monitor"]
+      value: nil,
+      attrs: %{items: ["read_on_message", "monitor"]}
     },
     monitored_transition: %{
       type: "list-multiselect",
-      value: ["rising", "falling"]
+      value: [],
+      attrs: %{items: ["rising", "falling"]}
     }
   }
-  @ui_attributes %{fire_button: true, left_icon: "send", right_icon: "settings-input-component"}
+  @ui_attributes %{fire_button: true, right_icon: "settings-input-component"}
   
   use Exred.Library.NodePrototype
   alias ElixirALE.GPIO
