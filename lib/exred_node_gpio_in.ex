@@ -57,7 +57,11 @@ defmodule Exred.Node.GPIOIn do
       attrs: %{items: ["rising", "falling"]}
     }
   }
-  @ui_attributes %{fire_button: true, right_icon: "settings-input-component"}
+  @ui_attributes %{
+    fire_button: true, 
+    right_icon: "settings-input-component",
+    config_order: [:name,:pin_number,:mode,:monitored_transition]
+  }
   
   use Exred.Library.NodePrototype
   alias ElixirALE.GPIO
