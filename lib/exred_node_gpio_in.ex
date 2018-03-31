@@ -1,26 +1,19 @@
 defmodule Exred.Node.GPIOIn do
   @moduledoc """
-  Exred node that receives data from a GPIO pin.
+  Receives data from a GPIO pin.
   
   Uses [Elixir ALE](https://github.com/fhunleth/elixir_ale) to interface with GPIO.
   
-  ###Configuration
-  __name__: node name
-
-  __pin_number__: GPIO pin number that the node will read
-
-  __mode__: 'read_on_message' or 'monitor'  
-  in read_on_message mode the node will read the GPIO pin value on every received message  
-  in monitor mode the node will monitor interrupts on the pin and send a message on rising and/or falling edges
-
-  __monitored_transition__: select 'rising' and/or 'falling'
+  It can work on two modes:
   
-  
-  ###Incoming message format
+  1. 'monitor': monitors the pin and sends a message on pin interrupt
+  2. 'read_on_message': reads the pin state and sends the data when triggered by an incoming message
+
+  **Incoming message format**
   Anything
   
-  ###Outgoing message format
-  __Read On Message__ mode:
+  **Outgoing message format**
+  _read on message_ mode:
   
   ```elixir
   msg = %{
@@ -28,7 +21,7 @@ defmodule Exred.Node.GPIOIn do
   }
   ```
 
-  __Monitor__ mode:
+  _monitor_ mode:
 
   ```elixir
   msg = %{
@@ -44,14 +37,28 @@ defmodule Exred.Node.GPIOIn do
   @category "input"
   @info @moduledoc
   @config %{
-    name: %{value: @name, type: "string", attrs: %{max: 20}},
-    pin_number: %{value: 0, type: "number", attrs: %{min: 0}},
+    name: %{
+      info: "Visible node name",
+      value: @name, 
+      type: "string", 
+      attrs: %{max: 20}
+    },
+    pin_number: %{
+      info: "GPIO pin number that the node will read",
+      value: 0, 
+      type: "number", 
+      attrs: %{min: 0}
+    },
     mode: %{
+      info: "'read_on_message' or 'monitor'\n
+      in read_on_message mode the node will read the GPIO pin value on every received message\n
+      in monitor mode the node will monitor interrupts on the pin and send a message on rising and/or falling edges",
       type: "list-singleselect", 
       value: nil,
       attrs: %{items: ["read_on_message", "monitor"]}
     },
     monitored_transition: %{
+      info: "select 'rising' and/or 'falling'",
       type: "list-multiselect",
       value: [],
       attrs: %{items: ["rising", "falling"]}
