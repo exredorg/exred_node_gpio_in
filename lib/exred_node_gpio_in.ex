@@ -76,6 +76,11 @@ defmodule Exred.Node.GPIOIn do
   
   @impl true
   def node_init(state) do
+    {Map.put(state, :init, :starting), 500}
+  end
+  
+  @impl true
+  def handle_msg(:timeout, %{init: :starting} = state) do
     # start GPIO process
     {:ok, pid} = GPIO.start_link(state.config.pin_number.value, :input)
     
@@ -90,11 +95,13 @@ defmodule Exred.Node.GPIOIn do
       GPIO.set_int(pid, interrupt)
     end
 
-    state |> Map.put(:pid, pid)
+    state 
+    |> Map.put(:pid, pid)
+    |> Map.put(:init, :done)
   end
-
-  @impl true
-  def handle_msg(msg, state) do 
+  
+  
+  def handle_msg(msg, %{init: :done} = state) do 
     case [state.config.mode.value, msg] do 
 
       ["read_on_message", _] -> 
