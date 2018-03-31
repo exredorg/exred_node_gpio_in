@@ -4,15 +4,16 @@ defmodule Exred.Node.GPIOIn do
   
   Uses [Elixir ALE](https://github.com/fhunleth/elixir_ale) to interface with GPIO.
   
-  It can work on two modes:
+  It can work in two modes:
   
-  1. 'monitor': monitors the pin and sends a message on pin interrupt
-  2. 'read_on_message': reads the pin state and sends the data when triggered by an incoming message
+  - 'monitor': monitors the pin and sends a message on pin interrupt
+  - 'read\\_on\\_message': reads the pin state and sends the data when triggered by an incoming message
 
-  **Incoming message format**
+  **Incoming message format**  
   Anything
   
   **Outgoing message format**
+  
   _read on message_ mode:
   
   ```elixir
@@ -50,15 +51,13 @@ defmodule Exred.Node.GPIOIn do
       attrs: %{min: 0}
     },
     mode: %{
-      info: "'read_on_message' or 'monitor'\n
-      in read_on_message mode the node will read the GPIO pin value on every received message\n
-      in monitor mode the node will monitor interrupts on the pin and send a message on rising and/or falling edges",
+      info: "read_on_message or monitor",
       type: "list-singleselect", 
       value: nil,
       attrs: %{items: ["read_on_message", "monitor"]}
     },
     monitored_transition: %{
-      info: "select 'rising' and/or 'falling'",
+      info: "send message in rising and/or falling edge",
       type: "list-multiselect",
       value: [],
       attrs: %{items: ["rising", "falling"]}
