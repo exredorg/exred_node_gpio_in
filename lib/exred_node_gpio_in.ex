@@ -77,8 +77,7 @@ defmodule Exred.Node.GPIOIn do
   @impl true
   def node_init(state) do
     IO.puts "GPIO NODE INIT"
-    
-    {Map.put(state, :init, :starting), 500}
+    {Map.put(state, :init, :starting), 5000}
   end
   
   @impl true
@@ -97,12 +96,18 @@ defmodule Exred.Node.GPIOIn do
       GPIO.set_int(pid, interrupt)
     end
 
+    IO.puts "GPIO STARTED!!"
+
     new_state = state 
     |> Map.put(:pid, pid)
     |> Map.put(:init, :done)
     {nil, new_state}
   end
   
+  def handle_msg(msg, %{init: :starting} = state) do
+    Logger.warn "unexpected message while inititalizing: #{inspect msg}"
+    {nil, state}
+  end
   
   def handle_msg(msg, %{init: :done} = state) do 
     case [state.config.mode.value, msg] do 
@@ -110,12 +115,12 @@ defmodule Exred.Node.GPIOIn do
       ["read_on_message", _] -> 
         # pin state is 0 or 1
         pin_state = GPIO.read(state.pid)
-        { %{msg | payload: pin_state}, state}
+        { Map.put(msg, :payload, pin_state), state}
         
       ["monitor", {:gpio_interrupt, _pin, condition}] ->
         # condition can be :rising or :falling
         payload = %{pin: state.config.pin_number.value, condition: condition}
-        { %{msg | payload: payload}, state}
+        { %{payload: payload}, state}
 
       # catch all
       [mode, _] ->
@@ -125,6 +130,11 @@ defmodule Exred.Node.GPIOIn do
     end
   end
 
+  def handle_msg(msg, state) do
+    Logger.warn "unexpected message while inititalizing: msg: #{inspect msg}\n  state: #{inspect state} "
+    {nil, state}
+  end
+  
   
   @impl true
   def fire(state) do
