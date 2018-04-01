@@ -76,6 +76,8 @@ defmodule Exred.Node.GPIOIn do
   
   @impl true
   def node_init(state) do
+    IO.puts "GPIO NODE INIT"
+    
     {Map.put(state, :init, :starting), 500}
   end
   
@@ -85,7 +87,7 @@ defmodule Exred.Node.GPIOIn do
     {:ok, pid} = GPIO.start_link(state.config.pin_number.value, :input)
     
     # set interrupt monitoring if in 'monitor' mode
-    if state.mode.value == "monitor" do
+    if state.config.mode.value == "monitor" do
       interrupt = case state.config.monitored_transition.value do
         [] -> :none
         ["rising"]  -> :rising
@@ -95,9 +97,10 @@ defmodule Exred.Node.GPIOIn do
       GPIO.set_int(pid, interrupt)
     end
 
-    state 
+    new_state = state 
     |> Map.put(:pid, pid)
     |> Map.put(:init, :done)
+    {nil, new_state}
   end
   
   
@@ -126,7 +129,7 @@ defmodule Exred.Node.GPIOIn do
   @impl true
   def fire(state) do
     # send a message to self to trigger reading the pin
-    send self, "fire"
+    send self(), "fire"
     state
   end
 end
