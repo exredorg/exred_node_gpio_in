@@ -76,15 +76,19 @@ defmodule Exred.Node.GPIOIn do
   
   @impl true
   def node_init(state) do
-    IO.puts "GPIO NODE INIT"
-    
-    {Map.put(state, :init, :starting), 500}
+    Process.flag :trap_exit, true
+    GenServer.cast self(), :do_init
+    Map.put(state, :init, :starting)
   end
+
   
   @impl true
-  def handle_msg(:timeout, %{init: :starting} = state) do
+  def handle_cast(:do_init, %{init: :starting} = state) do
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} GOT CAST: :do_init"
+    
     # start GPIO process
     {:ok, pid} = GPIO.start_link(state.config.pin_number.value, :input)
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} STARTED GPIO server: #{inspect pid}"
     
     # set interrupt monitoring if in 'monitor' mode
     if state.config.mode.value == "monitor" do
@@ -100,9 +104,15 @@ defmodule Exred.Node.GPIOIn do
     new_state = state 
     |> Map.put(:pid, pid)
     |> Map.put(:init, :done)
-    {nil, new_state}
+
+    {:noreply, new_state}
   end
   
+  @impl true
+  def handle_cast(cast, state) do
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} UNHANDLED CAST: #{inspect cast}"
+    {:noreply, state}
+  end
   
   def handle_msg(msg, %{init: :done} = state) do 
     case [state.config.mode.value, msg] do 
