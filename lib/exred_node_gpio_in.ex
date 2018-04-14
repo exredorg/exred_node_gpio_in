@@ -76,18 +76,22 @@ defmodule Exred.Node.GPIOIn do
   
   @impl true
   def node_init(state) do
-    IO.puts "GPIO NODE INIT"
-    {Map.put(state, :init, :starting), 500}
+    Process.flag :trap_exit, true
+    GenServer.cast self(), :do_init
+    Map.put(state, :init, :starting)
   end
+
   
   @impl true
-  def handle_msg(:timeout, %{init: :starting} = state) do
+  def handle_cast(:do_init, %{init: :starting} = state) do
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} GOT CAST: :do_init"
+    
     # start GPIO process
     {:ok, pid} = GPIO.start_link(state.config.pin_number.value, :input)
-    Logger.info :started_gpio
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} STARTED GPIO server: #{inspect pid}"
     
     # set interrupt monitoring if in 'monitor' mode
-    if state.mode.value == "monitor" do
+    if state.config.mode.value == "monitor" do
       interrupt = case state.config.monitored_transition.value do
         [] -> :none
         ["rising"]  -> :rising
@@ -97,13 +101,20 @@ defmodule Exred.Node.GPIOIn do
       GPIO.set_int(pid, interrupt)
     end
 
+    IO.puts "GPIO STARTED!!"
+
     new_state = state 
     |> Map.put(:pid, pid)
     |> Map.put(:init, :done)
-    
-    {nil, new_state}
+
+    {:noreply, new_state}
   end
   
+  @impl true
+  def handle_cast(cast, state) do
+    Logger.debug "node: #{state.node_id} #{get_in(state.config, [:name, :value])} UNHANDLED CAST: #{inspect cast}"
+    {:noreply, state}
+  end
   
   def handle_msg(msg, %{init: :done} = state) do 
     case [state.config.mode.value, msg] do 
@@ -111,12 +122,12 @@ defmodule Exred.Node.GPIOIn do
       ["read_on_message", _] -> 
         # pin state is 0 or 1
         pin_state = GPIO.read(state.pid)
-        { %{msg | payload: pin_state}, state}
+        { Map.put(msg, :payload, pin_state), state}
         
       ["monitor", {:gpio_interrupt, _pin, condition}] ->
         # condition can be :rising or :falling
         payload = %{pin: state.config.pin_number.value, condition: condition}
-        { %{msg | payload: payload}, state}
+        { %{payload: payload}, state}
 
       # catch all
       [mode, _] ->
@@ -126,6 +137,11 @@ defmodule Exred.Node.GPIOIn do
     end
   end
 
+  def handle_msg(msg, state) do
+    Logger.warn "unexpected message while inititalizing: msg: #{inspect msg}\n  state: #{inspect state} "
+    {nil, state}
+  end
+  
   
   @impl true
   def fire(state) do
