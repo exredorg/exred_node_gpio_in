@@ -76,7 +76,7 @@ defmodule Exred.Node.GPIOIn do
   
   @impl true
   def node_init(state) do
-    Process.flag :trap_exit, true
+    # return immediately and do inititalization in handle_cast
     GenServer.cast self(), :do_init
     Map.put(state, :init, :starting)
   end
