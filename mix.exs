@@ -26,4 +26,16 @@ defmodule Exred.Node.GPIOIn.Mixfile do
       {:elixir_ale, "~> 1.0"}
     ]
   end
+  
+  defp package do
+    %{
+      licenses: ["MIT"],
+      maintainers: ["Zsolt Keszthelyi"],
+      links: %{
+        "GitHub" => "https://github.com/exredorg/exred_node_gpio_in",
+        "Exred" => "http://exred.org"
+      },
+      files: ["lib", "mix.exs", "README.md", "LICENSE"]
+    }
+  end
 end
