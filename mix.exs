@@ -21,7 +21,8 @@ defmodule Exred.Node.GPIOIn.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:exred_library, git: "git@bitbucket.org:zsolt001/exred_library.git"},
+      {:exred_library, "~> 0.1.11"},
+      {:ex_doc, "~> 0.18.0", only: :dev, runtime: false},
       {:elixir_ale, "~> 1.0"}
     ]
   end
