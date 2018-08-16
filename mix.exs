@@ -1,12 +1,16 @@
 defmodule Exred.Node.GPIOIn.Mixfile do
   use Mix.Project
 
+  @description "Reads data from  RaspberryPi GPIO pins"
+
   def project do
     [
       app: :exred_node_gpio_in,
       version: "0.1.7",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
+      description: @description,
+      package: package(),
       deps: deps()
     ]
   end
@@ -26,7 +30,7 @@ defmodule Exred.Node.GPIOIn.Mixfile do
       {:elixir_ale, "~> 1.0"}
     ]
   end
-  
+
   defp package do
     %{
       licenses: ["MIT"],
