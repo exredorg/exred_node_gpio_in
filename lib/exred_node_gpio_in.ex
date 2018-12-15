@@ -69,7 +69,7 @@ defmodule Exred.Node.GPIOIn do
     config_order: [:name,:pin_number,:mode,:monitored_transition]
   }
   
-  use Exred.Library.NodePrototype
+  use Exred.NodePrototype
   alias ElixirALE.GPIO
   require Logger
   
