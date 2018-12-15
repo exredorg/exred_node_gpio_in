@@ -27,7 +27,7 @@ defmodule Exred.Node.GPIOIn.Mixfile do
   defp deps do
     [
       {:exred_nodeprototype, "~> 0.2"},
-      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.19.0", only: :dev, runtime: false}
       {:elixir_ale, "~> 1.0"}
     ]
   end
